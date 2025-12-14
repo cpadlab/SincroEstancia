@@ -1,0 +1,16 @@
+build/
+dist/
+
+*.class
+
+data/*.db
+data/uploads/
+*.log
+
+nbproject/private/
+
+nbproject/genfiles.properties
+
+.DS_Store
+Thumbs.db
+*~
