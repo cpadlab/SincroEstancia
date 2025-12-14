@@ -1,0 +1,15 @@
+sincroestancia
+sincroestancia.src.database
+sincroestancia.src.gui
+sincroestancia.src.gui.components
+sincroestancia.src.gui.config
+sincroestancia.src.gui.config.components
+sincroestancia.src.gui.dasboard
+sincroestancia.src.gui.dasboard.components
+sincroestancia.src.gui.dasboard.components.day
+sincroestancia.src.gui.dasboard.components.process
+sincroestancia.src.gui.register
+sincroestancia.src.gui.reports
+sincroestancia.src.models
+sincroestancia.src.services
+sincroestancia.src.utils

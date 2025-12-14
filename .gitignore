@@ -1,5 +1,7 @@
 build/
-dist/
+dist/lib
+dist/README.TXT
+dist/SincroEstancia.jar
 
 *.class
 
