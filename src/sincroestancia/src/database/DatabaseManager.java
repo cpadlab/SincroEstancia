@@ -23,8 +23,17 @@ public class DatabaseManager {
     
     private static Connection conn = null;
 
-    private static final String DATABASE_FILENAME = "data/sqlite.db";
-    private static final String DATABASE_URL = "jdbc:sqlite:" + DATABASE_FILENAME;
+    private static final String USER_DATA_DIR = 
+            System.getProperty("user.home") + 
+            java.io.File.separator + ".local" + 
+            java.io.File.separator + "share" + 
+            java.io.File.separator + "sincroestancia" + 
+            java.io.File.separator + "data" + 
+            java.io.File.separator;
+    
+    private static final String DB_FILENAME = "sqlite.db"; 
+    private static final String DATABASE_FULL_PATH = USER_DATA_DIR + DB_FILENAME;
+    private static final String DATABASE_URL = "jdbc:sqlite:" + DATABASE_FULL_PATH;
     private static final String SQL_INIT_SCRIPT_FILEPATH = "/sincroestancia/assets/database/init-databases.sql";
     
     /**
@@ -40,7 +49,16 @@ public class DatabaseManager {
         if (conn != null) { return; }
 
         try {
+            java.nio.file.Files.createDirectories(java.nio.file.Paths.get(USER_DATA_DIR));
+            System.out.println("[info] User data directory created/verified: " + USER_DATA_DIR);
+        } catch (java.io.IOException e) {
+            System.err.println("[error] Could not create user data directory: " + e.getMessage());
+            System.exit(1); 
+        }
+
+        try {
             Class.forName("org.sqlite.JDBC");
+            System.out.println("[debug] Attempting to connect to URL: " + DATABASE_URL);
             conn = DriverManager.getConnection(DATABASE_URL);
             System.out.println("[info] Connection to SQLite successfully established.");
         } catch (SQLException e) {

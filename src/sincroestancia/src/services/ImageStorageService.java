@@ -17,8 +17,17 @@ import javax.swing.ImageIcon;
  */
 public class ImageStorageService {
     
-    private static final String UPLOAD_DIR = "data/uploads";
+    private static final String UPLOAD_DIR = System.getProperty("user.home") + "/.local/share/sincroestancia/data/uploads";
+    private static final Path TARGET_PATH = Paths.get(UPLOAD_DIR);
     
+    static {
+        try {
+            Files.createDirectories(TARGET_PATH);
+            System.out.println("[info] Image storage directory created/verified: " + UPLOAD_DIR);
+        } catch (IOException e) {
+            System.err.println("[fatal] Could not create image storage directory. App will not function correctly: " + e.getMessage());
+        }
+    }
     /**
      * Copia un archivo seleccionado por el usuario al directorio de almacenamiento persistente.
      * * Pasos de implementación:
