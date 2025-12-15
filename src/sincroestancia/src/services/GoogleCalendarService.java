@@ -36,7 +36,11 @@ public class GoogleCalendarService {
 
     private static final String APPLICATION_NAME = "SincroEstancia Desktop";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
-    private static final String TOKENS_DIRECTORY_PATH = "tokens";
+    private static final String TOKENS_DIRECTORY_PATH = System.getProperty("user.home") 
+        + java.io.File.separator + ".local" 
+        + java.io.File.separator + "share" 
+        + java.io.File.separator + "sincroestancia" 
+        + java.io.File.separator + "tokens";
     private static final List<String> SCOPES = Collections.singletonList(CalendarScopes.CALENDAR);
 
     private Calendar service;
