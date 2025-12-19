@@ -51,6 +51,7 @@ public final class Main extends javax.swing.JFrame {
     private Config panel_config;
 
     private DatabaseService db_service;
+    private java.util.Map<String, Object> sessionUser;
 
     /**
      * Constructor principal de la ventana.
@@ -149,6 +150,21 @@ public final class Main extends javax.swing.JFrame {
         this.revalidate();
 
     }
+
+    /**
+     * Establece el usuario actual de la sesión.
+     * Llamado desde SincroEstancia.java al arrancar.
+     */
+    public void setSessionUser(java.util.Map<String, Object> user) {
+        this.sessionUser = user;
+        if (user != null) {
+            System.out.println("[info] Session started as: " + user.get("username") + " [" + user.get("type") + "]");
+            this.setTitle(this.getTitle() + " - Usuario: " + user.get("username"));
+            if (panel_config != null) {
+                panel_config.setSessionUser(user);
+            }
+        }
+    }
     
     /**
      * Vincula la interfaz gráfica con el gestor de sincronización (Singleton).
@@ -231,11 +247,24 @@ public final class Main extends javax.swing.JFrame {
         reports_btn.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                
+                if (sessionUser != null) {
+                    String type = (String) sessionUser.get("type");
+                    if (!"admin".equals(type)) {
+                        JOptionPane.showMessageDialog(Main.this, 
+                            "Acceso Denegado.\nSolo los usuarios 'Administrador' pueden acceder a los reportes financieros.", 
+                            "Restricción de Privilegios", 
+                            JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+                }
+
                 if (are_vuts_registered_global) {
                     set_panel_view("REPORTS", "Reportes (" + current_selected_vut_name + ")");
                 } else {
                     showNoVutWarning();
                 }
+
             }
         });
         

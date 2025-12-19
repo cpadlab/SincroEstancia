@@ -1,3 +1,10 @@
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    account_type TEXT NOT NULL CHECK(account_type IN ('admin', 'user')),
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
 
 CREATE TABLE IF NOT EXISTS vuts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

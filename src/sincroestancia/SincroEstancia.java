@@ -1,6 +1,9 @@
 package sincroestancia;
 
 import sincroestancia.src.gui.Main;
+import sincroestancia.src.gui.auth.LoginDialog;
+import sincroestancia.src.gui.auth.RegisterDialog;
+import sincroestancia.src.services.DatabaseService;
 
 import java.awt.Font;
 import java.awt.FontFormatException;
@@ -39,27 +42,56 @@ public class SincroEstancia {
      * de AWT/Swing para garantizar la seguridad de hilos.
      * * @param args Argumentos de línea de comandos (no utilizados actualmente).
      */
-    public static void main(String[] args) {
+ public static void main(String[] args) {
        
         DatabaseManager.connect();
         DatabaseManager.initialise_tables();
         
         SincroEstancia.load_fonts();
         
+        try {
+            javax.swing.UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatIntelliJLaf());
+            javax.swing.JFrame.setDefaultLookAndFeelDecorated(true);
+            javax.swing.JDialog.setDefaultLookAndFeelDecorated(true);
+        } catch (UnsupportedLookAndFeelException ex) {
+            System.err.println("[warning] Failed to initialize LaF");
+        }
+
+        DatabaseService dbService = new DatabaseService();
+        java.util.Map<String, Object> activeUser = null;
+
+        if (!dbService.hasUsers()) {
+            RegisterDialog registerDialog = new RegisterDialog(null);
+            registerDialog.setVisible(true);
+            if (registerDialog.isRegistered()) {
+                activeUser = registerDialog.getRegisteredUser();
+            }
+        } else {
+            LoginDialog loginDialog = new LoginDialog(null);
+            loginDialog.setVisible(true);
+            
+            if (loginDialog.isAuthenticated()) {
+                activeUser = loginDialog.getLoggedUser();
+            }
+        }
+
+        if (activeUser == null) {
+            System.out.println("[info] Auth cancelled. Exiting.");
+            DatabaseManager.disconnect();
+            System.exit(0);
+        }
+        
+        final java.util.Map<String, Object> sessionUser = activeUser;
+
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             DatabaseManager.disconnect();
         }));
         
-        try {
-            javax.swing.UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatIntelliJLaf());
-            javax.swing.JFrame.setDefaultLookAndFeelDecorated(true);
-        } catch (UnsupportedLookAndFeelException ex) {
-            System.err.println("[warning] Failed to initialize LaF");
-        }
-        
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Main().setVisible(true);
+                Main mainFrame = new Main();
+                mainFrame.setSessionUser(sessionUser);
+                mainFrame.setVisible(true);
             }
         });
         

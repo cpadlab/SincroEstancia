@@ -19,6 +19,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import java.io.File;
+import java.util.Map;
+
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import sincroestancia.src.gui.Main;
@@ -29,6 +31,7 @@ import sincroestancia.src.utils.StyleUtils;
 import sincroestancia.src.gui.components.ButtonUtils;
 import sincroestancia.src.gui.config.components.GoogleConfigPanel;
 import sincroestancia.src.gui.config.components.PriceConfigPanel;
+import sincroestancia.src.gui.config.components.UsersConfigPanel;
 
 /**
  * Panel principal de configuración del sistema.
@@ -57,6 +60,7 @@ public class Config extends JPanel {
     private ImageStorageService storageService;
     private VutItem currentVut;
     private File newCoverFile;
+    private UsersConfigPanel usersPanel;
 
     /**
      * Constructor.
@@ -67,6 +71,22 @@ public class Config extends JPanel {
         db = new DatabaseService();
         storageService = new ImageStorageService();
         initComponents();
+        usersPanel = new UsersConfigPanel();
+    }
+
+    /**
+     * Método llamado desde Main para configurar permisos.
+     * Corrige el error de "config_tabbed_pane cannot be resolved" usando "tabbedPane".
+     */
+    public void setSessionUser(Map<String, Object> user) {
+        if (user == null) return;
+        int userId = (int) user.get("id");
+        String role = (String) user.get("type");
+        usersPanel.setCurrentSessionUserId(userId);
+        tabbedPane.remove(usersPanel);
+        if ("admin".equals(role)) {
+            tabbedPane.addTab("Gestión Usuarios", usersPanel);
+        }
     }
 
     /**

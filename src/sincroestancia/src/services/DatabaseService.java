@@ -1593,4 +1593,111 @@ public class DatabaseService {
 
     }
 
+    /**
+     * Verifica si existe algún usuario registrado en el sistema.
+     */
+    public boolean hasUsers() {
+        String sql = "SELECT 1 FROM users LIMIT 1";
+        try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+            return rs.next();
+        } catch (SQLException e) {
+            System.err.println("[error] Error checking for users: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Registra un nuevo usuario con la contraseña encriptada.
+     */
+    public boolean registerUser(String username, String plainPassword, String type) {
+        String sql = "INSERT INTO users (username, password_hash, account_type) VALUES (?, ?, ?)";
+        String hashedPassword = sincroestancia.src.utils.PasswordUtils.hashPassword(plainPassword);
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            pstmt.setString(2, hashedPassword);
+            pstmt.setString(3, type);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("[error] Error registering user: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Intenta iniciar sesión. Retorna el objeto Usuario (o un mapa de datos) si es correcto, o null si falla.
+     */
+    public Map<String, Object> login(String username, String plainPassword) {
+        String sql = "SELECT id, username, password_hash, account_type FROM users WHERE username = ?";
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                String storedHash = rs.getString("password_hash");
+                // Verificamos la contraseña usando BCrypt
+                if (sincroestancia.src.utils.PasswordUtils.checkPassword(plainPassword, storedHash)) {
+                    Map<String, Object> user = new HashMap<>();
+                    user.put("id", rs.getInt("id"));
+                    user.put("username", rs.getString("username"));
+                    user.put("type", rs.getString("account_type"));
+                    return user;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("[error] Login error: " + e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Obtiene la lista de todos los usuarios (sin contraseñas).
+     */
+    public List<Map<String, Object>> getAllUsers() {
+        List<Map<String, Object>> users = new ArrayList<>();
+        String sql = "SELECT id, username, account_type FROM users ORDER BY id ASC";
+        
+        try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                Map<String, Object> user = new HashMap<>();
+                user.put("id", rs.getInt("id"));
+                user.put("username", rs.getString("username"));
+                user.put("type", rs.getString("account_type"));
+                users.add(user);
+            }
+        } catch (SQLException e) {
+            System.err.println("[error] Error fetching users: " + e.getMessage());
+        }
+        return users;
+    }
+
+    /**
+     * Elimina un usuario por ID.
+     */
+    public boolean deleteUser(int userId) {
+        String sql = "DELETE FROM users WHERE id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, userId);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("[error] Error deleting user: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Actualiza el rol de un usuario.
+     */
+    public boolean updateUserRole(int userId, String newRole) {
+        String sql = "UPDATE users SET account_type = ? WHERE id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, newRole);
+            pstmt.setInt(2, userId);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("[error] Error updating role: " + e.getMessage());
+            return false;
+        }
+    }
+
 }
